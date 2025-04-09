@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eszköznyilvántartó Rendszer</title>
+    <style>
+        :root {
+            --primary-color: #3a5a78;
+            --secondary-color: #f0f4f8;
+            --accent-color: #5c8db8;
+            --text-color: #333;
+            --border-color: #ddd;
+            --success-color: #4caf50;
+            --danger-color: #f44336;
+            --warning-color: #ff9800;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 28px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            flex: 1;
+            background-color: var(--secondary-color);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .search-box {
+            display: flex;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select {
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .search-box input {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-right: none;
+        }
+
+        .search-box button {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            padding: 10px 20px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--accent-color);
+        }
+
+        button.danger {
+            background-color: var(--danger-color);
+        }
+
+        button.danger:hover {
+            background-color: #d32f2f;
+        }
+
+        button.warning {
+            background-color: var(--warning-color);
+        }
+
+        button.warning:hover {
+            background-color: #e68a00;
+        }
+
+        button.success {
+            background-color: var(--success-color);
+        }
+
+        button.success:hover {
+            background-color: #3d8b40;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-buttons button {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            animation: modalopen 0.3s;
+        }
+
+        @keyframes modalopen {
+            from {opacity: 0; transform: translateY(-20px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-header h2 {
+            color: var(--primary-color);
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: var(--text-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .status-available {
+            color: var(--success-color);
+            font-weight: 500;
+        }
+
+        .status-in-use {
+            color: var(--warning-color);
+            font-weight: 500;
+        }
+
+        .status-maintenance {
+            color: var(--danger-color);
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: #888;
+        }
+
+        .empty-state p {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 5px 10px;
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+        }
+
+        .pagination button.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background-color: var(--success-color);
+            color: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s, fadeOut 0.5s 2.5s;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes slideIn {
+            from {transform: translateX(100%); opacity: 0;}
+            to {transform: translateX(0); opacity: 1;}
+        }
+
+        @keyframes fadeOut {
+            from {opacity: 1;}
+            to {opacity: 0;}
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                width: 100%;
+                min-width: auto;
+            }
+            
+            .stats {
+                flex-direction: column;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Eszköznyilvántartó Rendszer</h1>
+            <button id="addAssetBtn">+ Új eszköz</button>
+        </header>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Összes eszköz</h3>
+                <p id="totalAssets">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Elérhető eszközök</h3>
+                <p id="availableAssets">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Használatban</h3>
+                <p id="inUseAssets">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Karbantartás alatt</h3>
+                <p id="maintenanceAssets">0</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Keresés eszköz neve, típusa vagy helye szerint...">
+                <button id="searchBtn">Keresés</button>
+            </div>
+            <select id="filterStatus">
+                <option value="all">Minden állapot</option>
+                <option value="available">Elérhető</option>
+                <option value="in-use">Használatban</option>
+                <option value="maintenance">Karbantartás alatt</option>
+            </select>
+        </div>
+
+        <table id="assetsTable">
+            <thead>
+                <tr>
+                    <th>Eszköz neve</th>
+                    <th>Típus</th>
+                    <th>Sorozatszám</th>
+                    <th>Beszerzés dátuma</th>
+                    <th>Helyszín</th>
+                    <th>Állapot</th>
+                    <th>Műveletek</th>
+                </tr>
+            </thead>
+            <tbody id="assetsList">
+                <!-- Asset rows will be added here dynamically -->
+            </tbody>
+        </table>
+
+        <div id="emptyState" class="empty-state">
+            <p>Még nincsenek eszközök a nyilvántartásban.</p>
+            <button id="addFirstAssetBtn">Első eszköz hozzáadása</button>
+        </div>
+
+        <div class="pagination" id="pagination">
+            <!-- Pagination buttons will be added here dynamically -->
+        </div>
+    </div>
+
+    <!-- Add/Edit Asset Modal -->
+    <div id="assetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Új eszköz hozzáadása</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="assetForm">
+                <input type="hidden" id="assetId">
+                <div class="form-group">
+                    <label for="assetName">Eszköz neve*</label>
+                    <input type="text" id="assetName" required>
+                </div>
+                <div class="form-group">
+                    <label for="assetType">Típus*</label>
+                    <input type="text" id="assetType" required>
+                </div>
+                <div class="form-group">
+                    <label for="serialNumber">Sorozatszám*</label>
+                    <input type="text" id="serialNumber" required>
+                </div>
+                <div class="form-group">
+                    <label for="purchaseDate">Beszerzés dátuma*</label>
+                    <input type="date" id="purchaseDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="location">Helyszín*</label>
+                    <input type="text" id="location" required>
+                </div>
+                <div class="form-group">
+                    <label for="status">Állapot*</label>
+                    <select id="status" required>
+                        <option value="available">Elérhető</option>
+                        <option value="in-use">Használatban</option>
+                        <option value="maintenance">Karbantartás alatt</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Megjegyzések</label>
+                    <input type="text" id="notes">
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancelBtn">Mégse</button>
+                    <button type="submit" id="saveBtn" class="success">Mentés</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Eszköz törlése</h2>
+                <span class="close">&times;</span>
+            </div>
+            <p>Biztosan törölni szeretné ezt az eszközt? Ez a művelet nem visszavonható.</p>
+            <div class="form-actions">
+                <button id="cancelDeleteBtn">Mégse</button>
+                <button id="confirmDeleteBtn" class="danger">Törlés</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification">
+        Sikeres művelet!
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const addAssetBtn = document.getElementById('addAssetBtn');
+            const addFirstAssetBtn = document.getElementById('addFirstAssetBtn');
+            const assetModal = document.getElementById('assetModal');
+            const deleteModal = document.getElementById('deleteModal');
+            const closeButtons = document.getElementsByClassName('close');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            const assetForm = document.getElementById('assetForm');
+            const assetsList = document.getElementById('assetsList');
+            const emptyState = document.getElementById('emptyState');
+            const assetsTable = document.getElementById('assetsTable');
+            const modalTitle = document.getElementById('modalTitle');
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const filterStatus = document.getElementById('filterStatus');
+            const notification = document.getElementById('notification');
+            const pagination = document.getElementById('pagination');
+            
+            // Stats elements
+            const totalAssets = document.getElementById('totalAssets');
+            const availableAssets = document.getElementById('availableAssets');
+            const inUseAssets = document.getElementById('inUseAssets');
+            const maintenanceAssets = document.getElementById('maintenanceAssets');
+
+            // Form fields
+            const assetId = document.getElementById('assetId');
+            const assetName = document.getElementById('assetName');
+            const assetType = document.getElementById('assetType');
+            const serialNumber = document.getElementById('serialNumber');
+            const purchaseDate = document.getElementById('purchaseDate');
+            const location = document.getElementById('location');
+            const status = document.getElementById('status');
+            const notes = document.getElementById('notes');
+
+            // Variables
+            let assets = JSON.parse(localStorage.getItem('assets')) || [];
+            let currentAssetId = null;
+            let currentPage = 1;
+            const itemsPerPage = 10;
+            let filteredAssets = [...assets];
+
+            // Initialize
+            updateUI();
+
+            // Event Listeners
+            addAssetBtn.addEventListener('click', openAddAssetModal);
+            addFirstAssetBtn.addEventListener('click', openAddAssetModal);
+            
+            for (let i = 0; i < closeButtons.length; i++) {
+                closeButtons[i].addEventListener('click', function() {
+                    assetModal.style.display = 'none';
+                    deleteModal.style.display = 'none';
+                });
+            }
+            
+            cancelBtn.addEventListener('click', function() {
+                assetModal.style.display = 'none';
+            });
+            
+            cancelDeleteBtn.addEventListener('click', function() {
+                deleteModal.style.display = 'none';
+            });
+            
+            confirmDeleteBtn.addEventListener('click', deleteAsset);
+            
+            assetForm.addEventListener('submit', saveAsset);
+            
+            searchBtn.addEventListener('click', function() {
+                currentPage = 1;
+                filterAssets();
+            });
+            
+            searchInput.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    currentPage = 1;
+                    filterAssets();
+                }
+            });
+            
+            filterStatus.addEventListener('change', function() {
+                currentPage = 1;
+                filterAssets();
+            });
+
+            // Window click to close modals
+            window.addEventListener('click', function(e) {
+                if (e.target === assetModal) {
+                    assetModal.style.display = 'none';
+                }
+                if (e.target === deleteModal) {
+                    deleteModal.style.display = 'none';
+                }
+            });
+
+            // Functions
+            function openAddAssetModal() {
+                modalTitle.textContent = 'Új eszköz hozzáadása';
+                assetForm.reset();
+                assetId.value = '';
+                currentAssetId = null;
+                
+                // Set default date to today
+                const today = new Date().toISOString().split('T')[0];
+                purchaseDate.value = today;
+                
+                assetModal.style.display = 'block';
+            }
+
+            function openEditAssetModal(id) {
+                const asset = assets.find(a => a.id === id);
+                if (!asset) return;
+                
+                modalTitle.textContent = 'Eszköz szerkesztése';
+                assetId.value = asset.id;
+                assetName.value = asset.name;
+                assetType.value = asset.type;
+                serialNumber.value = asset.serialNumber;
+                purchaseDate.value = asset.purchaseDate;
+                location.value = asset.location;
+                status.value = asset.status;
+                notes.value = asset.notes || '';
+                
+                currentAssetId = id;
+                assetModal.style.display = 'block';
+            }
+
+            function openDeleteModal(id) {
+                currentAssetId = id;
+                deleteModal.style.display = 'block';
+            }
+
+            function saveAsset(e) {
+                e.preventDefault();
+                
+                const newAsset = {
+                    id: currentAssetId || Date.now().toString(),
+                    name: assetName.value,
+                    type: assetType.value,
+                    serialNumber: serialNumber.value,
+                    purchaseDate: purchaseDate.value,
+                    location: location.value,
+                    status: status.value,
+                    notes: notes.value
+                };
+                
+                if (currentAssetId) {
+                    // Edit existing asset
+                    const index = assets.findIndex(a => a.id === currentAssetId);
+                    if (index !== -1) {
+                        assets[index] = newAsset;
+                        showNotification('Eszköz sikeresen frissítve!');
+                    }
+                } else {
+                    // Add new asset
+                    assets.push(newAsset);
+                    showNotification('Új eszköz sikeresen hozzáadva!');
+                }
+                
+                // Save to localStorage
+                localStorage.setItem('assets', JSON.stringify(assets));
+                
+                // Update UI
+                assetModal.style.display = 'none';
+                filterAssets();
+                updateUI();
+            }
+
+            function deleteAsset() {
+                if (!currentAssetId) return;
+                
+                assets = assets.filter(a => a.id !== currentAssetId);
+                
+                // Save to localStorage
+                localStorage.setItem('assets', JSON.stringify(assets));
+                
+                // Update UI
+                deleteModal.style.display = 'none';
+                showNotification('Eszköz sikeresen törölve!');
+                filterAssets();
+                updateUI();
+            }
+
+            function filterAssets() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const statusFilter = filterStatus.value;
+                
+                filteredAssets = assets.filter(asset => {
+                    const matchesSearch = 
+                        asset.name.toLowerCase().includes(searchTerm) ||
+                        asset.type.toLowerCase().includes(searchTerm) ||
+                        asset.location.toLowerCase().includes(searchTerm) ||
+                        asset.serialNumber.toLowerCase().includes(searchTerm);
+                    
+                    const matchesStatus = statusFilter === 'all' || asset.status === statusFilter;
+                    
+                    return matchesSearch && matchesStatus;
+                });
+                
+                renderAssets();
+                renderPagination();
+            }
+
+            function renderAssets() {
+                assetsList.innerHTML = '';
+                
+                if (filteredAssets.length === 0) {
+                    assetsTable.style.display = 'none';
+                    emptyState.style.display = 'block';
+                    return;
+                }
+                
+                assetsTable.style.display = 'table';
+                emptyState.style.display = 'none';
+                
+                // Calculate pagination
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const paginatedAssets = filteredAssets.slice(startIndex, endIndex);
+                
+                paginatedAssets.forEach(asset => {
+                    const row = document.createElement('tr');
+                    
+                    // Format date for display
+                    const purchaseDate = new Date(asset.purchaseDate);
+                    const formattedDate = purchaseDate.toLocaleDateString('hu-HU');
+                    
+                    // Status display text
+                    let statusText = '';
+                    let statusClass = '';
+                    
+                    switch(asset.status) {
+                        case 'available':
+                            statusText = 'Elérhető';
+                            statusClass = 'status-available';
+                            break;
+                        case 'in-use':
+                            statusText = 'Használatban';
+                            statusClass = 'status-in-use';
+                            break;
+                        case 'maintenance':
+                            statusText = 'Karbantartás alatt';
+                            statusClass = 'status-maintenance';
+                            break;
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${asset.name}</td>
+                        <td>${asset.type}</td>
+                        <td>${asset.serialNumber}</td>
+                        <td>${formattedDate}</td>
+                        <td>${asset.location}</td>
+                        <td class="${statusClass}">${statusText}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="edit-btn" data-id="${asset.id}">Szerkesztés</button>
+                                <button class="delete-btn danger" data-id="${asset.id}">Törlés</button>
+                            </div>
+                        </td>
+                    `;
+                    
+                    assetsList.appendChild(row);
+                });
+                
+                // Add event listeners to edit and delete buttons
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        openEditAssetModal(this.getAttribute('data-id'));
+                    });
+                });
+                
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        openDeleteModal(this.getAttribute('data-id'));
+                    });
+                });
+            }
+
+            function renderPagination() {
+                pagination.innerHTML = '';
+                
+                if (filteredAssets.length <= itemsPerPage) {
+                    pagination.style.display = 'none';
+                    return;
+                }
+                
+                pagination.style.display = 'flex';
+                
+                const pageCount = Math.ceil(filteredAssets.length / itemsPerPage);
+                
+                // Previous button
+                if (currentPage > 1) {
+                    const prevBtn = document.createElement('button');
+                    prevBtn.textContent = '«';
+                    prevBtn.addEventListener('click', () => {
+                        currentPage--;
+                        renderAssets();
+                        renderPagination();
+                    });
+                    pagination.appendChild(prevBtn);
+                }
+                
+                // Page buttons
+                for (let i = 1; i <= pageCount; i++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.textContent = i;
+                    if (i === currentPage) {
+                        pageBtn.classList.add('active');
+                    }
+                    
+                    pageBtn.addEventListener('click', () => {
+                        currentPage = i;
+                        renderAssets();
+                        renderPagination();
+                    });
+                    
+                    pagination.appendChild(pageBtn);
+                }
+                
+                // Next button
+                if (currentPage < pageCount) {
+                    const nextBtn = document.createElement('button');
+                    nextBtn.textContent = '»';
+                    nextBtn.addEventListener('click', () => {
+                        currentPage++;
+                        renderAssets();
+                        renderPagination();
+                    });
+                    pagination.appendChild(nextBtn);
+                }
+            }
+
+            function updateUI() {
+                // Update stats
+                totalAssets.textContent = assets.length;
+                availableAssets.textContent = assets.filter(a => a.status === 'available').length;
+                inUseAssets.textContent = assets.filter(a => a.status === 'in-use').length;
+                maintenanceAssets.textContent = assets.filter(a => a.status === 'maintenance').length;
+                
+                filterAssets();
+            }
+
+            function showNotification(message) {
+                notification.textContent = message;
+                notification.style.display = 'block';
+                
+                // Hide notification after 3 seconds
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }
+
+            // Add some sample data if no assets exist
+            if (assets.length === 0) {
+                const sampleAssets = [
+                    {
+                        id: '1',
+                        name: 'Dell Latitude 5420',
+                        type: 'Laptop',
+                        serialNumber: 'DL5420-2023-001',
+                        purchaseDate: '2023-01-15',
+                        location: 'Iroda 101',
+                        status: 'in-use',
+                        notes: 'Kovács János használja'
+                    },
+                    {
+                        id: '2',
+                        name: 'HP LaserJet Pro',
+                        type: 'Nyomtató',
+                        serialNumber: 'HPLJ-2022-005',
+                        purchaseDate: '2022-11-20',
+                        location: 'Iroda 102',
+                        status: 'available',
+                        notes: ''
+                    },
+                    {
+                        id: '3',
+                        name: 'Samsung S22',
+                        type: 'Mobiltelefon',
+                        serialNumber: 'SS22-2023-010',
+                        purchaseDate: '2023-03-05',
+                        location: 'Iroda 101',
+                        status: 'in-use',
+                        notes: 'Nagy Péter használja'
+                    },
+                    {
+                        id: '4',
+                        name: 'Lenovo ThinkPad X1',
+                        type: 'Laptop',
+                        serialNumber: 'LTP-X1-2022-002',
+                        purchaseDate: '2022-08-10',
+                        location: 'Iroda 103',
+                        status: 'maintenance',
+                        notes: 'Akkumulátor csere szükséges'
+                    },
+                    {
+                        id: '5',
+                        name: 'Epson Projektor',
+                        type: 'Projektor',
+                        serialNumber: 'EP-PRO-2021-001',
+                        purchaseDate: '2021-12-05',
+                        location: 'Tárgyaló',
+                        status: 'available',
+                        notes: ''
+                    }
+                ];
+                
+                assets = sampleAssets;
+                localStorage.setItem('assets', JSON.stringify(assets));
+                updateUI();
+            }
+        });
+    </script>
+</body>
+</html>
